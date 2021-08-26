@@ -1,14 +1,14 @@
-import React, {useState, useEffect } from "react";
-import Layout from "./Layout";
-import Card from "./Card";
-import {getCategories, getFilteredProducts} from './apiCore';
+import React, { useState, useEffect } from 'react';
+import Layout from './Layout';
+import Card from './Card';
+import { getCategories, getFilteredProducts } from './apiCore';
 import Checkbox from './Checkbox';
 import RadioBox from './RadioBox';
-import { prices } from "./fixedPrices";
+import { prices } from './fixedPrices';
 
 const Shop = () => {
   const [myFilters, setMyFilters] = useState({
-    filters: { category: [], price: []}
+    filters: { category: [], price: [] },
   });
 
   const [categories, setCategories] = useState([]);
@@ -18,39 +18,37 @@ const Shop = () => {
   const [size, setSize] = useState(0);
   const [filterdResults, setFilteredResults] = useState([]);
 
-
-
   const init = () => {
-    getCategories().then(data => {
-        if(data.error){
-           setError(data.error)
-        } else {
-            setCategories(data)
-        }
-    });         
+    getCategories().then((data) => {
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setCategories(data);
+      }
+    });
   };
 
   const loadMore = () => {
-    let toSkip = skip + limit
-    getFilteredProducts(toSkip, limit, myFilters.filters).then(data => {
-        if(data.error){
-          setError(data.error)
-        } else {
-          setFilteredResults([...filterdResults,...data.data]);
-          setSize(data.size)
-          setSkip(toSkip);
-        }
-      })
-  }; 
+    let toSkip = skip + limit;
+    getFilteredProducts(toSkip, limit, myFilters.filters).then((data) => {
+      if (data.error) {
+        setError(data.error);
+      } else {
+        setFilteredResults([...filterdResults, ...data.data]);
+        setSize(data.size);
+        setSkip(toSkip);
+      }
+    });
+  };
 
-  const loadFilteredResults = newFilters => {
-    getFilteredProducts(skip, limit ,newFilters).then(data => {
-      if(data.error) {
+  const loadFilteredResults = (newFilters) => {
+    getFilteredProducts(skip, limit, newFilters).then((data) => {
+      if (data.error) {
         setError(data.error);
       } else {
         setFilteredResults(data.data);
-        setSize(data.size)
-        setSkip(0)
+        setSize(data.size);
+        setSkip(0);
       }
     });
   };
@@ -60,23 +58,23 @@ const Shop = () => {
       size > 0 &&
       size >= limit && (
         <button onClick={loadMore} className="btn btn-warning mb-5">
-            loadMore
+          loadMore
         </button>
       )
-    )
-  }
+    );
+  };
 
   useEffect(() => {
     init();
     loadFilteredResults(skip, limit, myFilters.filters);
-  },[]);
+  }, []);
 
   const handleFilters = (filters, filterBy) => {
     // console.log("SHOP",filters, filterBy);
-    const newFilters = {...myFilters};
+    const newFilters = { ...myFilters };
     newFilters.filters[filterBy] = filters;
 
-    if(filterBy == "price") {
+    if (filterBy === 'price') {
       let priceValues = handlePrice(filters);
       newFilters.filters[filterBy] = priceValues;
     }
@@ -84,61 +82,57 @@ const Shop = () => {
     setMyFilters(newFilters);
   };
 
-  const handlePrice = value => {
-    const data = prices
-    let array = []
+  const handlePrice = (value) => {
+    const data = prices;
+    let array = [];
 
-    for(let key in data) {
-      if(data[key]._id === parseInt(value)){
-        array = data[key].array
+    for (let key in data) {
+      if (data[key]._id === parseInt(value)) {
+        array = data[key].array;
       }
     }
-     return array;
+    return array;
   };
 
-    return (
-        <Layout
-           title="Shop Page"
-           description ="Search and find books of your choice"
-           className="container-fluid"
-           >
-          <div className="row">
-            <div className="col-4">
-              <h4>Filter by categories</h4>
-               <ul>
-                  <Checkbox
-                   categories={categories}
-                  handleFilters={filters => 
-                  handleFilters(filters,"category")
-                  } 
-                  />
-               </ul>
+  return (
+    <Layout
+      title="Shop Page"
+      description="Search and find books of your choice"
+      className="container-fluid"
+    >
+      <div className="row">
+        <div className="col-4">
+          <h4>Filter by categories</h4>
+          <ul>
+            <Checkbox
+              categories={categories}
+              handleFilters={(filters) => handleFilters(filters, 'category')}
+            />
+          </ul>
 
-               <h4>Filter by price range</h4>
-               <div>
-                  <RadioBox
-                   prices={prices}
-                  handleFilters={filters => 
-                  handleFilters(filters,"price")
-                  } 
-                  />
-               </div> 
-            </div>
-            <div className="col-8">
-             <h2 className="mb-4">Products</h2>
-              <div className="row"> 
-                {filterdResults.map((product,i) => (
-                     <div key={i} className="col-4 mb-3"> 
-                     <Card product={product}/>
-                     </div>
-                ))}
+          <h4>Filter by price range</h4>
+          <div>
+            <RadioBox
+              prices={prices}
+              handleFilters={(filters) => handleFilters(filters, 'price')}
+            />
+          </div>
+        </div>
+        <div className="col-8">
+          <h2 className="mb-4">Products</h2>
+          <div className="row">
+            {filterdResults.map((product, i) => (
+              <div key={i} className="col-4 mb-3">
+                <Card product={product} />
               </div>
-              <hr />
-              {loadMoreButton()}
+            ))}
           </div>
-          </div>
-        </Layout>
-    )
+          <hr />
+          {loadMoreButton()}
+        </div>
+      </div>
+    </Layout>
+  );
 };
 
 export default Shop;
